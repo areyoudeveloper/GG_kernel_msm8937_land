@@ -163,6 +163,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
 	int entered_state;
 
 	struct cpuidle_state *target_state = &drv->states[index];
+	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
 	ktime_t time_start, time_end;
 	s64 diff;
 
@@ -170,9 +171,13 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
 	sched_idle_set_state(target_state, index);
 
 	trace_cpu_idle_rcuidle(index, dev->cpu);
-	time_start = ktime_get();
+
+	time_start = ns_to_ktime(local_clock());
 
 	entered_state = target_state->enter(dev, drv, index);
+
+	time_end = ns_to_ktime(local_clock());
+	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
 
 
 	time_end = ktime_get();
@@ -192,10 +197,18 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
 	dev->last_residency = (int) diff;
 
 	if (entered_state >= 0) {
+//<<<<<<< HEAD
 		/* Update cpuidle counters */
 		/* This can be moved to within driver enter routine
 		 * but that results in multiple copies of same code.
 		 */
+//=======
+		diff = ktime_us_delta(time_end, time_start);
+		if (diff > INT_MAX)
+			diff = INT_MAX;
+
+		dev->last_residency = (int) diff;
+//>>>>>>> cf69c2cc8c5a... cpuidle: Fix last_residency division
 		dev->states_usage[entered_state].time += dev->last_residency;
 		dev->states_usage[entered_state].usage++;
 	} else {
