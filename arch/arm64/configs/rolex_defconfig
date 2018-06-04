@@ -791,6 +791,10 @@ CONFIG_TASK_XACCT=y
 CONFIG_TASK_IO_ACCOUNTING=y
 
 #EDIT
+<<<<<<< HEAD
+=======
+CONFIG_FB_MSM_MDSS_KCAL_CTRL=y
+>>>>>>> d2a66766dc1a... Added Sound Control.
 CONFIG_ADRENO_IDLER=y
 #
 # Treble Compatibility
