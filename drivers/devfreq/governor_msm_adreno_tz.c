@@ -162,10 +162,6 @@ void compute_work_load(struct devfreq_dev_status *stats,
 	spin_unlock(&sample_lock);
 }
 
-#ifdef CONFIG_ADRENO_IDLER
-extern int adreno_idler(struct devfreq_dev_status stats, struct devfreq *devfreq,
-		 unsigned long *freq);
-#endif
 
 /* Trap into the TrustZone, and call funcs there. */
 static int __secure_tz_reset_entry2(unsigned int *scm_data, u32 size_scm_data,
@@ -366,33 +362,12 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq,
 		return result;
 	}
 
-        /* Prevent overflow */
-	if (stats.busy_time >= (1 << 24) || stats.total_time >= (1 << 24)) {
-		stats.busy_time >>= 7;
-		stats.total_time >>= 7;
-
-	}
+       
 
 	*freq = stats.current_frequency;
-	
-#ifdef CONFIG_ADRENO_IDLER
- 	if (adreno_idler(stats, devfreq, freq)) {
- 		/* adreno_idler has asked to bail out now */
- 		return 0;
- 	}
-#endif
+	priv->bin.total_time += stats.total_time;
+	priv->bin.busy_time += stats.busy_time;
 
-	/*
-	* Force to use & record as min freq when system has
-	*entered pm-suspend or screen-off state.
-	*/
-	if (suspended || !display_on) {
-		*freq = devfreq->profile->freq_table[devfreq->profile->max_state - 1];
-		return 0;
-	}
-
- 	priv->bin.total_time += stats.total_time;
- 	priv->bin.busy_time += stats.busy_time;
 
         if (stats.private_data)
 		context_count =  *((int *)stats.private_data);
