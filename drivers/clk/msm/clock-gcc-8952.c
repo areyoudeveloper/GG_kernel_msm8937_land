@@ -4257,13 +4257,15 @@ static void override_for_8937(int speed_bin)
 		LOWER, 160000000, LOW, 308570000, NOMINAL, 400000000,
 		NOM_PLUS, 432000000);
 	OVERRIDE_FTABLE(vfe1, ftbl_gcc_camss_vfe0_1_clk, 8937);
-     if (speed_bin) {
+    
+	 if (speed_bin) {
 		OVERRIDE_FMAX6(gfx3d,
 			LOWER, 216000000, LOW, 300000000,
 			NOMINAL, 375000000, NOM_PLUS, 400000000,
 			HIGH, 450000000, SUPER_TUR, 650000000);
 		OVERRIDE_FTABLE(gfx3d, ftbl_gcc_oxili_gfx3d_clk, 8937_650MHz);
-   } else {
+   } else 
+       if (speed_bin) {
 		OVERRIDE_FMAX6(gfx3d,
 			LOWER, 216000000, LOW, 300000000,
 			NOMINAL, 375000000, NOM_PLUS, 400000000,
